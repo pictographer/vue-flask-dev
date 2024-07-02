@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Install server requirements
+echo "Installing server requirements..."
+pip install -r ./server/requirements.txt
+
+# Install cliebt requirements
+echo "Installing client requirements..."
+pushd client
+npm install
+popd
+
+echo "Setup complete!"

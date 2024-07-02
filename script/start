@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Start Flask server
+python server/src/app.py &
+flask_pid=$!
+
+# Start Vue.js application
+pushd client
+npm run dev &
+vue_pid=$!
+popd
+
+# Start the device application
+pushd device
+cargo run &
+device_pid=$!
+popd
+
+
+# Function to kill the processes
+cleanup() {
+  echo "Stopping Flask server..."
+  kill $flask_pid
+  echo "Stopping Vue.js application..."
+  kill $vue_pid
+  echo "Stopping device application..."
+  kill $device_pid
+}
+
+# Register the cleanup function to be called on script exit
+trap cleanup EXIT
+
+# Wait for the processes to finish
+wait

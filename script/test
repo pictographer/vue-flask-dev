@@ -1,0 +1,66 @@
+#!/bin/bash
+
+need_cleanup=true
+
+# Function to kill the processes
+cleanup() {
+  if [[ $need_cleanup == true ]]
+  then
+    echo "Stopping Flask server (pid: $flask_pid)..."
+    echo "Stopping Vue.js application (pid: $vue_pid)..."
+    echo "Stopping device application (pid: $device_pid)..."
+
+    kill $device_pid $flask_pid $vue_pid
+
+    # npm leaves behind node and esbuild processes. Killing by name
+    # is a bit anti-social, but so is accumulating a couple of useless
+    # processes every time the tests are run.
+    killall node
+
+    if [[ $server_test_status == 0 && $system_test_status == 0 ]]
+    then
+      echo -e "\nAll passed!"
+      status=0
+    else
+      # See https://docs.pytest.org/en/stable/reference/exit-codes.html
+      echo -e "\nServer tests: $server_test_status"
+      echo      "System tests: $system_test_status"
+      status=1
+    fi
+  fi
+  need_cleanup=false
+  exit $status
+}
+
+# Register the cleanup function to be called if the script is interrupted
+trap cleanup EXIT
+
+# Start Flask server
+python server/src/app.py &
+flask_pid=$!
+
+# Start Vue.js application
+pushd client
+npm run dev &
+vue_pid=$!
+popd
+
+# Start the device application
+pushd device
+cargo run &
+device_pid=$!
+popd
+
+pushd server
+echo "Running server test"
+pytest
+server_test_status=$?
+popd
+
+pushd client
+echo "Running end-to-end testing"
+pytest
+system_test_status=$?
+popd
+
+cleanup

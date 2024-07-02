@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang=en>
+  <head>
+    <meta charset=utf-8>
+    <title>Device Server</title>
+  </head>
+  <body>
+    <h1>Routes</h1>
+    <dl>
+      {% for key, value in routes | dictsort %}
+      <dt>{{ key|safe }}</dt>
+      <dd>{{ value }}</dd>
+      {% endfor %}
+    </dl>
+  </body>
+</html>
