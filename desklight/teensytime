@@ -1,0 +1,17 @@
+#! /usr/bin/bash
+
+if [ "${ACTION}" = add -a "${REL}" = 1040 -a -d "/sys${DEVPATH}" ]; then
+    # Return the timezone offset, e.g. -700.
+    z=$(date +%-z)
+    # Lop off the last two digits yielding offset in hours, e.g. -7.
+    h=${z::-2}
+    # Keep the last two digits yielding the offset in minutes. Usually, but not always 00.
+    m=${z: -2}
+    # Copy the sign, if negative.
+    if [[ ${z::1} == "-" ]]
+    then
+	m = "-"${m}
+    fi
+    # Tell the Teensy what the local time is.
+    devcmd time $(($(date +%s) + $h * 60 * 60 + $m * 60))
+fi

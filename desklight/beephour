@@ -1,0 +1,1 @@
+/usr/local/bin/devcmd number $(date +%H) $(date +%H)

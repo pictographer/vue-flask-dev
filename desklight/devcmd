@@ -1,0 +1,4 @@
+exec 3< /dev/ttyACM0
+echo "$@" > /dev/ttyACM0
+while read -r -u 3 -t 1; do echo "${REPLY}"; done
+exec 3<&-
